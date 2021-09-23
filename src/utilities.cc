@@ -301,6 +301,14 @@ const char* const_basename(const char* filepath) {
   return base ? (base+1) : filepath;
 }
 
+bool create_link(const char* linkpath, const char* filepath) {
+#ifdef OS_WINDOWS
+    return CreateHardLink(linkpath, filepath, NULL) != 0;
+#elif defined(HAVE_UNISTD_H)
+    return symlink(filepath, linkpath) != 0;
+#endif
+}
+
 static string g_my_user_name;
 const string& MyUserName() {
   return g_my_user_name;

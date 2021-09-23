@@ -1065,36 +1065,36 @@ bool LogFileObject::CreateLogfile(const string& time_pid_string) {
   // points to the latest logfile.)  If it fails, we're sad but it's
   // no error.
   if (!symlink_basename_.empty()) {
-    // take directory from filename
-    const char* slash = strrchr(filename, PATH_SEPARATOR);
-    const string linkname =
-      symlink_basename_ + '.' + LogSeverityNames[severity_];
-    string linkpath;
-    if ( slash ) linkpath = string(filename, static_cast<size_t>(slash-filename+1));  // get dirname
-    linkpath += linkname;
-    unlink(linkpath.c_str());                    // delete old one if it exists
+      // take directory from filename
+      const char *slash = strrchr(filename, PATH_SEPARATOR);
+      const string linkname =
+              symlink_basename_ + '.' + LogSeverityNames[severity_];
+      string linkpath;
+      if (slash) linkpath = string(filename, static_cast<size_t>(slash - filename + 1));  // get dirname
+      linkpath += linkname;
+      unlink(linkpath.c_str());                    // delete old one if it exists
 
-#if defined(OS_WINDOWS)
-    // TODO(hamaji): Create lnk file on Windows?
-#elif defined(HAVE_UNISTD_H)
-    // We must have unistd.h.
-    // Make the symlink be relative (in the same dir) so that if the
-    // entire log directory gets relocated the link is still valid.
-    const char *linkdest = slash ? (slash + 1) : filename;
-    if (symlink(linkdest, linkpath.c_str()) != 0) {
-      // silently ignore failures
-    }
-
-    // Make an additional link to the log file in a place specified by
-    // FLAGS_log_link, if indicated
-    if (!FLAGS_log_link.empty()) {
-      linkpath = FLAGS_log_link + "/" + linkname;
-      unlink(linkpath.c_str());                  // delete old one if it exists
-      if (symlink(filename, linkpath.c_str()) != 0) {
-        // silently ignore failures
-      }
-    }
+#if defined(HAVE_UNISTD_H)
+      // In Unix-based operating systems, make the symlink be relative (in the same dir)
+      // so that if the entire log directory gets relocated the link is still valid.
+      const char *linkdest = slash ? (slash + 1) : filename;
+#elif defined(OS_WINDOWS)
+      const char *linkdest = filename;
 #endif
+
+      if (!create_link(linkpath.c_str(), linkdest)) {
+          // silently ignore errors
+      }
+
+      // Make an additional link to the log file in a place specified by
+      // FLAGS_log_link, if indicated
+      if (!FLAGS_log_link.empty()) {
+          linkpath = FLAGS_log_link + "/" + linkname;
+          unlink(linkpath.c_str());                  // delete old one if it exists
+          if (!create_link(linkpath.c_str(), filename)) {
+              // silently ignore failures
+          }
+      }
   }
 
   return true;  // Everything worked
