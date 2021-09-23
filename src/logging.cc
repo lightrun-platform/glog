@@ -177,12 +177,15 @@ GLOG_DEFINE_bool(stop_logging_if_full_disk, false,
 GLOG_DEFINE_string(log_backtrace_at, "",
                    "Emit a backtrace when logging at file:linenum.");
 
-// TODO(hamaji): consider windows
-#define PATH_SEPARATOR '/'
+#if defined(OS_WINDOWS)
+ #define PATH_SEPARATOR '\\'
+#else
+ #define PATH_SEPARATOR '/'
+#endif
 
 #ifndef HAVE_PREAD
 #if defined(OS_WINDOWS)
-#include <BaseTsd.h>
+#include <basetsd.h>
 #define ssize_t SSIZE_T
 #endif
 static ssize_t pread(int fd, void* buf, size_t count, off_t offset) {
@@ -926,26 +929,26 @@ bool LogFileObject::CreateLogfile(const string& time_pid_string) {
     unlink(linkpath.c_str());                    // delete old one if it exists
 
 #if defined(OS_WINDOWS)
-    // TODO(hamaji): Create lnk file on Windows?
-#elif defined(HAVE_UNISTD_H)
-    // We must have unistd.h.
-    // Make the symlink be relative (in the same dir) so that if the
-    // entire log directory gets relocated the link is still valid.
+    const char *linkdest = filename;
+#else
+    // In Unix-based operating systems, make the symlink be relative (in the same dir)
+    // so that if the entire log directory gets relocated the link is still valid.
     const char *linkdest = slash ? (slash + 1) : filename;
-    if (symlink(linkdest, linkpath.c_str()) != 0) {
-      // silently ignore failures
+#endif
+
+    if (!create_link(linkpath.c_str(), linkdest)) {
+        // silently ignore errors
     }
 
     // Make an additional link to the log file in a place specified by
     // FLAGS_log_link, if indicated
     if (!FLAGS_log_link.empty()) {
-      linkpath = FLAGS_log_link + "/" + linkname;
-      unlink(linkpath.c_str());                  // delete old one if it exists
-      if (symlink(filename, linkpath.c_str()) != 0) {
-        // silently ignore failures
-      }
+        linkpath = FLAGS_log_link + "/" + linkname;
+        unlink(linkpath.c_str());                  // delete old one if it exists
+        if (!create_link(linkpath.c_str(), filename)) {
+            // silently ignore failures
+        }
     }
-#endif
   }
 
   return true;  // Everything worked

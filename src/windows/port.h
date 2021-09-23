@@ -132,10 +132,13 @@ typedef int pid_t;
 #endif  // _MSC_VER
 
 // ----------------------------------- THREADS
-typedef DWORD pthread_t;
-typedef DWORD pthread_key_t;
+// Commented out because of build failures when compiling for windows agent.
+//typedef DWORD pthread_t;
+// Commented out because of build failures when compiling for windows agent.
+//typedef DWORD pthread_key_t;
 typedef LONG pthread_once_t;
-enum { PTHREAD_ONCE_INIT = 0 };   // important that this be 0! for SpinLock
+// Commented out because of build failures when compiling for windows agent.
+//enum { PTHREAD_ONCE_INIT = 0 };   // important that this be 0! for SpinLock
 #define pthread_self  GetCurrentThreadId
 #define pthread_equal(pthread_t_1, pthread_t_2)  ((pthread_t_1)==(pthread_t_2))
 
