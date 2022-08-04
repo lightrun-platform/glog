@@ -15796,21 +15796,6 @@ fi
 
 done
 
-# For backtrace with libunwind.
-for ac_header in libunwind.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "libunwind.h" "ac_cv_header_libunwind_h" "$ac_includes_default"
-if test "x$ac_cv_header_libunwind_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBUNWIND_H 1
-_ACEOF
- ac_cv_have_libunwind_h=1
-else
-  ac_cv_have_libunwind_h=0
-fi
-
-done
-
 for ac_header in ucontext.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "ucontext.h" "ac_cv_header_ucontext_h" "$ac_includes_default"
@@ -16975,61 +16960,6 @@ fi
 else
   HAVE_GMOCK_TRUE='#'
   HAVE_GMOCK_FALSE=
-fi
-
-
-# We want to link in libunwind if it exists
-UNWIND_LIBS=
-# Unfortunately, we need to check the header file in addition to the
-# lib file to check if libunwind is available since libunwind-0.98
-# doesn't install all necessary header files.
-if test x"$ac_cv_have_libunwind_h" = x"1"; then
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking for backtrace in -lunwind" >&5
-$as_echo_n "checking for backtrace in -lunwind... " >&6; }
-if ${ac_cv_lib_unwind_backtrace+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lunwind  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char backtrace ();
-int
-main ()
-{
-return backtrace ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_unwind_backtrace=yes
-else
-  ac_cv_lib_unwind_backtrace=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_unwind_backtrace" >&5
-$as_echo "$ac_cv_lib_unwind_backtrace" >&6; }
-if test "x$ac_cv_lib_unwind_backtrace" = xyes; then :
-  UNWIND_LIBS=-lunwind
-fi
-
-fi
-
-if test x"$UNWIND_LIBS" != x""; then
-
-$as_echo "#define HAVE_LIB_UNWIND 1" >>confdefs.h
-
 fi
 
 # We'd like to use read/write locks in several places in the code.
